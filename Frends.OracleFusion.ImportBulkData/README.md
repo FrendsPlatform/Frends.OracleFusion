@@ -1,6 +1,6 @@
 # Frends.OracleFusion.ImportBulkData
 
-Description of the Task
+Frends task that uploads FBDI files as a ZIP archive to Oracle Fusion UCM and returns a DocumentId for triggering the import job.
 
 [![ImportBulkData_build](https://github.com/FrendsPlatform/Frends.OracleFusion/actions/workflows/ImportBulkData_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.OracleFusion/actions/workflows/ImportBulkData_test_on_main.yml)
 ![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.OracleFusion/Frends.OracleFusion.ImportBulkData|main)

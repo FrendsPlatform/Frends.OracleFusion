@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -10,7 +7,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Frends.OracleFusion.ImportBulkData.Definitions;
 
 namespace Frends.OracleFusion.ImportBulkData.Helpers;
 
@@ -30,12 +26,27 @@ internal class FbdiClient : IDisposable
     /// <param name="username">Username for basic authentication.</param>
     /// <param name="password">Password for basic authentication.</param>
     /// <param name="apiVersion">API version for the fscmRestApi endpoint.</param>
-    public FbdiClient(string baseUrl, string username, string password, string apiVersion)
+    /// <param name="timeout">Timeout in seconds for HTTP requests to the Oracle Fusion API.</param>
+    public FbdiClient(string baseUrl, string username, string password, string apiVersion, int timeout)
+        : this(baseUrl, username, password, apiVersion, timeout, new HttpClient())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FbdiClient"/> class with an injected HTTP client.
+    /// </summary>
+    /// <param name="baseUrl">Oracle Fusion base URL.</param>
+    /// <param name="username">Username for basic authentication.</param>
+    /// <param name="password">Password for basic authentication.</param>
+    /// <param name="apiVersion">API version for the fscmRestApi endpoint.</param>
+    /// <param name="timeout">Timeout in seconds for HTTP requests to the Oracle Fusion API.</param>
+    /// <param name="httpClient">HTTP client instance. Used for injecting mocked clients in tests.</param>
+    internal FbdiClient(string baseUrl, string username, string password, string apiVersion, int timeout, HttpClient httpClient)
     {
         this.baseUrl = baseUrl.TrimEnd('/');
         this.apiVersion = apiVersion;
-        httpClient = new HttpClient();
-
+        this.httpClient = httpClient;
+        httpClient.Timeout = TimeSpan.FromSeconds(timeout);
         var authValue = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authValue);
     }
@@ -69,7 +80,7 @@ internal class FbdiClient : IDisposable
         var options = new JsonSerializerOptions
         {
             PropertyNamingPolicy = null, // Keep original casing (PascalCase)
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         var json = JsonSerializer.Serialize(requestBody, options);
@@ -98,59 +109,4 @@ internal class FbdiClient : IDisposable
     {
         httpClient?.Dispose();
     }
-}
-
-/// <summary>
-/// Request for uploading file to UCM via ERP Integrations API.
-/// </summary>
-internal class UploadFileToUcmRequest
-{
-    /// <summary>
-    /// Gets or sets the operation name.
-    /// </summary>
-    /// <example>uploadFileToUCM</example>
-    public string OperationName { get; set; }
-
-    /// <summary>
-    /// Gets or sets the base64 encoded ZIP file content.
-    /// </summary>
-    /// <example>UEsDBBQACAgIADdT4VAAAAAA...</example>
-    public string DocumentContent { get; set; }
-
-    /// <summary>
-    /// Gets or sets the document account.
-    /// </summary>
-    /// <example>fin/cashManagement/import</example>
-    public string DocumentAccount { get; set; }
-
-    /// <summary>
-    /// Gets or sets the content type.
-    /// </summary>
-    /// <example>zip</example>
-    public string ContentType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the file name.
-    /// </summary>
-    /// <example>MyFile.zip</example>
-    public string FileName { get; set; }
-
-    /// <summary>
-    /// Gets or sets the document ID (null for new uploads).
-    /// </summary>
-    /// <example>null</example>
-    public string DocumentId { get; set; }
-}
-
-/// <summary>
-/// Response from upload file to UCM operation.
-/// </summary>
-internal class UploadFileToUcmResponse
-{
-    /// <summary>
-    /// Gets or sets the document ID.
-    /// </summary>
-    /// <example>87558082</example>
-    [JsonPropertyName("DocumentId")]
-    public string DocumentId { get; set; }
 }

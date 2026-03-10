@@ -5,7 +5,6 @@ using NUnit.Framework;
 
 namespace Frends.OracleFusion.ImportBulkData.Tests;
 
-// TODO: Adjust the test to use a real invalid Input scenario (e.g., missing or malformed data)
 [TestFixture]
 public class ErrorHandlerTest
 {
@@ -39,10 +38,7 @@ public class ErrorHandlerTest
         Assert.That(ex.Message, Contains.Substring(CustomErrorMessage));
     }
 
-    private static Input DefaultInput() => new()
-    {
-        Repeat = -1, // Invalid value to cause an exception
-    };
+    private static Input DefaultInput() => new();
 
     private static Connection DefaultConnection() => new();
 

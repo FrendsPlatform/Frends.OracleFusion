@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
-        <Version>1.0.4</Version>
+        <Version>1.0.0</Version>
         <Authors>Frends</Authors>
         <Copyright>Copyright (c) 2026 Frends EiPaaS</Copyright>
         <Company>Frends</Company>
@@ -10,7 +10,7 @@
         <PackageTags>Frends</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Description>Description of the Task</Description>
+        <Description>Frends task that uploads FBDI files as a ZIP archive to Oracle Fusion UCM and returns a DocumentId for triggering the import job.</Description>
         <PackageProjectUrl>https://frends.com/</PackageProjectUrl>
         <RepositoryUrl>https://github.com/FrendsPlatform/Frends.OracleFusion/tree/main/Frends.OracleFusion.ImportBulkData</RepositoryUrl>
         <Nullable>disable</Nullable>
@@ -39,4 +39,8 @@
 				 CopyToOutputDirectory="PreserveNewest" />
 		<AdditionalFiles Include="FrendsTaskMetadata.json" />
     </ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Frends.OracleFusion.ImportBulkData.Tests" />
+	</ItemGroup>
 </Project>

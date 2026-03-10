@@ -9,6 +9,13 @@ namespace Frends.OracleFusion.ImportBulkData.Definitions;
 public class Options
 {
     /// <summary>
+    /// Timeout in seconds for HTTP requests. Default is 30.
+    /// </summary>
+    /// <example>30</example>
+    [DefaultValue(30)]
+    public int TimeoutSeconds { get; set; } = 30;
+
+    /// <summary>
     /// Whether to throw an error on failure.
     /// </summary>
     /// <example>true</example>

@@ -16,12 +16,19 @@ namespace Frends.OracleFusion.ImportBulkData;
 public static class OracleFusion
 {
     /// <summary>
-    /// Uploads FBDI data files to Oracle Fusion UCM using the uploadFileToUCM operation.
+    /// Factory for creating FbdiClient instances. Can be overridden in tests to inject a mock client.
+    /// </summary>
+    internal static Func<string, string, string, string, int, FbdiClient> FbdiClientConstructor { get; set; }
+    = (baseUrl, username, password, apiVersion, timeout)
+        => new FbdiClient(baseUrl, username, password, apiVersion, timeout);
+
+    /// <summary>
+    /// Frends task that uploads FBDI files as a ZIP archive to Oracle Fusion UCM and returns a DocumentId for triggering the import job.
     /// [Documentation](https://tasks.frends.com/tasks/frends-tasks/Frends-OracleFusion-ImportBulkData)
     /// </summary>
     /// <param name="input">Essential parameters including files and UCM account.</param>
     /// <param name="connection">Connection parameters for Oracle Fusion authentication.</param>
-    /// <param name="options">Additional parameters for error handling.</param>
+    /// <param name="options">Additional parameters for error handling  and request timeout.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>object { bool Success, string DocumentId, string Output, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static Result ImportBulkData(
@@ -46,7 +53,6 @@ public static class OracleFusion
         Options options,
         CancellationToken cancellationToken)
     {
-        // Validate required connection parameters
         if (string.IsNullOrWhiteSpace(connection.BaseUrl))
             throw new ArgumentException("BaseUrl is required.", nameof(connection));
 
@@ -56,7 +62,9 @@ public static class OracleFusion
         if (string.IsNullOrWhiteSpace(connection.Password))
             throw new ArgumentException("Password is required.", nameof(connection));
 
-        // Validate required input parameters
+        if (string.IsNullOrWhiteSpace(connection.ApiVersion))
+            throw new ArgumentException("ApiVersion is required.", nameof(connection));
+
         if (input.Files == null || input.Files.Length == 0)
             throw new ArgumentException("Files array must contain at least one file.", nameof(input));
 
@@ -66,7 +74,6 @@ public static class OracleFusion
         if (string.IsNullOrWhiteSpace(input.DocumentAccount))
             throw new ArgumentException("DocumentAccount is required.", nameof(input));
 
-        // Validate each file
         foreach (var file in input.Files)
         {
             if (string.IsNullOrWhiteSpace(file.FileName))
@@ -103,7 +110,7 @@ public static class OracleFusion
             zipBase64 = Convert.ToBase64String(zipBytes);
         }
 
-        using var client = new FbdiClient(connection.BaseUrl, connection.Username, connection.Password, connection.ApiVersion);
+        using var client = FbdiClientConstructor(connection.BaseUrl, connection.Username, connection.Password, connection.ApiVersion, options.TimeoutSeconds);
 
         // Step 2: Upload file to UCM
         var documentId = await client.UploadFileToUcmAsync(
