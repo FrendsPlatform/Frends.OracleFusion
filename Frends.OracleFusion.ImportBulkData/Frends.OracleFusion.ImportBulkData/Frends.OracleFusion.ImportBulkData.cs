@@ -99,7 +99,7 @@ public static class OracleFusion
                     var entry = archive.CreateEntry(file.FileName, CompressionLevel.Optimal);
                     using (var entryStream = entry.Open())
                     {
-                        await entryStream.WriteAsync(fileBytes, 0, fileBytes.Length, cancellationToken);
+                        await entryStream.WriteAsync(fileBytes, cancellationToken);
                     }
                 }
             }
