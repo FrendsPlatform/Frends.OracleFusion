@@ -35,15 +35,15 @@ public class Options
     /// Include log file in the output.
     /// </summary>
     /// <example>true</example>
-    [DefaultValue(true)]
-    public bool IncludeLogFile { get; set; } = true;
+    [DefaultValue(false)]
+    public bool IncludeLogFile { get; set; } = false;
 
     /// <summary>
     /// Include output file in the output.
     /// </summary>
     /// <example>true</example>
-    [DefaultValue(true)]
-    public bool IncludeOutputFile { get; set; } = true;
+    [DefaultValue(false)]
+    public bool IncludeOutputFile { get; set; } = false;
 
     /// <summary>
     /// Whether to throw an error on failure.

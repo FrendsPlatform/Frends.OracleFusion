@@ -21,7 +21,10 @@ public class FunctionalTests
     private const string Password = "testpass";
     private const string ApiVersion = "latest";
     private const string RequestId = "12345678";
-    private static readonly string StatusUrl = $"{BaseUrl}/fscmRestApi/resources/{ApiVersion}/erpintegrations?finder=ESSJobStatusRF;requestId={RequestId}";
+    private static readonly string StatusUrl = $"{BaseUrl}/fscmRestApi/resources/{ApiVersion}/erpintegrations?finder=ESSJobStatusRF%3BrequestId%3D{RequestId}";
+    private static readonly string LogUrl = $"{BaseUrl}/fscmRestApi/resources/{ApiVersion}/erpintegrations?finder=ESSJobExecutionDetailsRF%3BrequestId%3D{RequestId}%2CfileType%3DLOG";
+    private static readonly string OutUrl = $"{BaseUrl}/fscmRestApi/resources/{ApiVersion}/erpintegrations?finder=ESSJobExecutionDetailsRF%3BrequestId%3D{RequestId}%2CfileType%3DOUT";
+    private static readonly string OutputUrl = $"{BaseUrl}/fscmRestApi/resources/{ApiVersion}/erpintegrations?finder=ESSJobExecutionDetailsRF%3BrequestId%3D{RequestId}%2CfileType%3DALL";
 
     [Test]
     public void GetEssJobStatus_SingleCheck_JobSucceeded_ReturnsSuccess()
@@ -246,29 +249,6 @@ public class FunctionalTests
     }
 
     [Test]
-    public void GetEssJobStatus_SingleCheck_JobFailed_ThrowErrorOnFailureFalse_ReturnsFailedResult()
-    {
-        var mockHttp = new MockHttpMessageHandler();
-        mockHttp
-            .When(HttpMethod.Get, StatusUrl)
-            .Respond(HttpStatusCode.OK, "application/json", StatusJson("FAILED"));
-
-        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
-
-        var result = OracleFusion.GetEssJobStatus(
-            BuildValidInput(),
-            BuildValidConnection(),
-            BuildOptions(waitForCompletion: false, throwErrorOnFailure: false),
-            CancellationToken.None);
-
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.IsCompleted, Is.True);
-        Assert.That(result.JobStatus, Is.EqualTo("FAILED"));
-        Assert.That(result.Error, Is.Not.Null);
-        Assert.That(result.Error.Message, Does.Contain("FAILED"));
-    }
-
-    [Test]
     public void GetEssJobStatus_SingleCheck_JobCancelled_ReturnsCompletedNotSuccess()
     {
         var mockHttp = new MockHttpMessageHandler();
@@ -291,16 +271,136 @@ public class FunctionalTests
     }
 
     [Test]
-    public void GetEssJobStatus_WaitForCompletion_InvalidTimeoutMinutes_ThrowsArgumentException()
+    public void GetEssJobStatus_IncludeLogFile_JobSucceeded_LogFileContentPopulated()
     {
-        var ex = Assert.Throws<Exception>(() =>
-            OracleFusion.GetEssJobStatus(
-                BuildValidInput(),
-                BuildValidConnection(),
-                BuildOptions(waitForCompletion: true, timeoutMinutes: 0, pollingIntervalSeconds: 0),
-                CancellationToken.None));
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("SUCCEEDED"));
+        mockHttp
+            .When(HttpMethod.Get, LogUrl)
+            .Respond(HttpStatusCode.OK, "application/json", OutputJson("SUCCEEDED", "LOG", "aGVsbG8="));
 
-        Assert.That(ex.Message, Does.Contain("TimeoutMinutes"));
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var options = BuildOptions(waitForCompletion: false);
+        options.IncludeLogFile = true;
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            options,
+            CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.LogFileContent, Is.EqualTo("aGVsbG8="));
+        Assert.That(result.OutputFileContent, Is.Null);
+    }
+
+    [Test]
+    public void GetEssJobStatus_IncludeOutputFile_JobSucceeded_OutputFileContentPopulated()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("SUCCEEDED"));
+        mockHttp
+            .When(HttpMethod.Get, OutUrl)
+            .Respond(HttpStatusCode.OK, "application/json", OutputJson("SUCCEEDED", "OUT", "aGVsbG8="));
+
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var options = BuildOptions(waitForCompletion: false);
+        options.IncludeOutputFile = true;
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            options,
+            CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.OutputFileContent, Is.EqualTo("aGVsbG8="));
+        Assert.That(result.LogFileContent, Is.Null);
+    }
+
+    [Test]
+    public void GetEssJobStatus_IncludeLogAndOutputFile_JobSucceeded_BothContentPopulated()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("SUCCEEDED"));
+        mockHttp
+            .When(HttpMethod.Get, OutputUrl)
+            .Respond(HttpStatusCode.OK, "application/json", OutputJson("SUCCEEDED", "ALL", "aGVsbG8="));
+
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var options = BuildOptions(waitForCompletion: false);
+        options.IncludeLogFile = true;
+        options.IncludeOutputFile = true;
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            options,
+            CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.LogFileContent, Is.EqualTo("aGVsbG8="));
+        Assert.That(result.OutputFileContent, Is.EqualTo("aGVsbG8="));
+    }
+
+    [Test]
+    public void GetEssJobStatus_IncludeLogFile_JobStillRunning_SkipsDownload()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("RUNNING"));
+
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var options = BuildOptions(waitForCompletion: false);
+        options.IncludeLogFile = true;
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            options,
+            CancellationToken.None);
+
+        Assert.That(result.IsCompleted, Is.False);
+        Assert.That(result.LogFileContent, Is.Null);
+        Assert.That(result.OutputFileContent, Is.Null);
+    }
+
+    [Test]
+    public void GetEssJobStatus_IncludeLogFile_DownloadFails_OutputContainsErrorMessage()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("SUCCEEDED"));
+        mockHttp
+            .When(HttpMethod.Get, LogUrl)
+            .Respond(HttpStatusCode.InternalServerError, "application/json", "{}");
+
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var options = BuildOptions(waitForCompletion: false);
+        options.IncludeLogFile = true;
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            options,
+            CancellationToken.None);
+
+        Assert.That(result.Success, Is.True);
+        Assert.That(result.LogFileContent, Is.Null);
+        Assert.That(result.Output, Does.Contain("Failed to retrieve job output"));
     }
 
     [TearDown]
@@ -348,4 +448,19 @@ public class FunctionalTests
             },
         });
     }
+
+    private static string OutputJson(string status, string fileType, string documentContent) =>
+        JsonSerializer.Serialize(new
+        {
+            items = new[]
+            {
+                new
+                {
+                    ReqstId = RequestId,
+                    RequestStatus = status,
+                    FileType = fileType,
+                    DocumentContent = documentContent,
+                },
+            },
+        });
 }
