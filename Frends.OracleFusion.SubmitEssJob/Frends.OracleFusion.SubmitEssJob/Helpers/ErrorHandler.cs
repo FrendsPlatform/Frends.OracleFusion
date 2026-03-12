@@ -1,7 +1,7 @@
 using System;
-using Frends.OracleFusion.RunEssJob.Definitions;
+using Frends.OracleFusion.SubmitEssJob.Definitions;
 
-namespace Frends.OracleFusion.RunEssJob.Helpers;
+namespace Frends.OracleFusion.SubmitEssJob.Helpers;
 
 internal static class ErrorHandler
 {

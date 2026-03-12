@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.OracleFusion.RunEssJob.Definitions;
+namespace Frends.OracleFusion.SubmitEssJob.Definitions;
 
 /// <summary>
 /// Connection parameters for Oracle Fusion.

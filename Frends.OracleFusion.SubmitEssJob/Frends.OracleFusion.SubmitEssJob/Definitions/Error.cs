@@ -1,6 +1,6 @@
 using System;
 
-namespace Frends.OracleFusion.RunEssJob.Definitions;
+namespace Frends.OracleFusion.SubmitEssJob.Definitions;
 
 /// <summary>
 /// Error that occurred during the task.
@@ -10,13 +10,12 @@ public class Error
     /// <summary>
     /// Summary of the error.
     /// </summary>
-    /// <example>Unable to join strings.</example>
+    /// <example>Unable to submit ESS job.</example>
     public string Message { get; set; }
 
     /// <summary>
     /// Additional information about the error.
     /// </summary>
     /// <example>object { Exception AdditionalInfo }</example>
-    // TODO: Add task specific additional information. Strong typing is recommended when reasonable.
     public Exception AdditionalInfo { get; set; }
 }

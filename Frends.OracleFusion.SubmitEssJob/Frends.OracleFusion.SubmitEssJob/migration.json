@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Task": "Frends.OracleFusion.RunEssJob",
+    "Task": "Frends.OracleFusion.SubmitEssJob",
     "Migrations": [
       {
         "Version": "1.0.0",

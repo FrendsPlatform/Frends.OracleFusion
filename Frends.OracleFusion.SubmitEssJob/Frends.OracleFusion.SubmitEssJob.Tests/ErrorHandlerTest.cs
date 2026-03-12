@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
-using Frends.OracleFusion.RunEssJob.Definitions;
+using Frends.OracleFusion.SubmitEssJob.Definitions;
 using NUnit.Framework;
 
-namespace Frends.OracleFusion.RunEssJob.Tests;
+namespace Frends.OracleFusion.SubmitEssJob.Tests;
 
 [TestFixture]
 public class ErrorHandlerTest
@@ -14,7 +14,7 @@ public class ErrorHandlerTest
     public void Should_Throw_Error_When_ThrowErrorOnFailure_Is_True()
     {
         var ex = Assert.Throws<Exception>(() =>
-           OracleFusion.RunEssJob(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None));
+           OracleFusion.SubmitEssJob(DefaultInput(), DefaultConnection(), DefaultOptions(), CancellationToken.None));
         Assert.That(ex, Is.Not.Null);
         Assert.That(ex.Message, Does.Contain("JobPackageName"));
     }
@@ -24,7 +24,7 @@ public class ErrorHandlerTest
     {
         var options = DefaultOptions();
         options.ThrowErrorOnFailure = false;
-        var result = OracleFusion.RunEssJob(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
+        var result = OracleFusion.SubmitEssJob(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
         Assert.That(result.Success, Is.False);
     }
 
@@ -34,7 +34,7 @@ public class ErrorHandlerTest
         var options = DefaultOptions();
         options.ErrorMessageOnFailure = CustomErrorMessage;
         options.ThrowErrorOnFailure = false;
-        var result = OracleFusion.RunEssJob(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
+        var result = OracleFusion.SubmitEssJob(DefaultInput(), DefaultConnection(), options, CancellationToken.None);
         Assert.That(result.Success, Is.False);
         Assert.That(result.Error, Is.Not.Null);
         Assert.That(result.Error.Message, Contains.Substring(CustomErrorMessage));
@@ -42,7 +42,7 @@ public class ErrorHandlerTest
 
     private static Input DefaultInput() => new()
     {
-        JobPackageName = string.Empty, // Invalid value to cause an exception
+        JobPackageName = string.Empty,
         JobDefName = "TestJob",
     };
 

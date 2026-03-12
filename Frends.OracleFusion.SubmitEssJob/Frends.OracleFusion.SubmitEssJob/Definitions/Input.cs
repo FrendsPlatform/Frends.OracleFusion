@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace Frends.OracleFusion.RunEssJob.Definitions;
+namespace Frends.OracleFusion.SubmitEssJob.Definitions;
 
 /// <summary>
 /// Essential parameters for ESS job execution.

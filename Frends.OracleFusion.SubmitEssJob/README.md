@@ -1,9 +1,9 @@
-# Frends.OracleFusion.RunEssJob
+# Frends.OracleFusion.SubmitEssJob
 
-Description of the Task
+Submits an Oracle Fusion ESS job and immediately returns the assigned Request ID.
 
-[![RunEssJob_build](https://github.com/FrendsPlatform/Frends.OracleFusion/actions/workflows/RunEssJob_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.OracleFusion/actions/workflows/RunEssJob_test_on_main.yml)
-![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.OracleFusion/Frends.OracleFusion.RunEssJob|main)
+[![SubmitEssJob_build](https://github.com/FrendsPlatform/Frends.OracleFusion/actions/workflows/SubmitEssJob_test_on_main.yml/badge.svg)](https://github.com/FrendsPlatform/Frends.OracleFusion/actions/workflows/SubmitEssJob_test_on_main.yml)
+![Coverage](https://app-github-custom-badges.azurewebsites.net/Badge?key=FrendsPlatform/Frends.OracleFusion/Frends.OracleFusion.SubmitEssJob|main)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ## Installing
