@@ -15,6 +15,11 @@ namespace Frends.OracleFusion.SubmitEssJob.Helpers;
 /// </summary>
 internal class EssJobClient : IDisposable
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = null, // Keep original casing (PascalCase)
+    };
+
     private readonly HttpClient httpClient;
     private readonly string baseUrl;
     private readonly string apiVersion;
@@ -68,12 +73,7 @@ internal class EssJobClient : IDisposable
 
         var url = $"{baseUrl}/fscmRestApi/resources/{apiVersion}/erpintegrations";
 
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = null, // Keep original casing (PascalCase)
-        };
-
-        var json = JsonSerializer.Serialize(requestBody, options);
+        var json = JsonSerializer.Serialize(requestBody, SerializerOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
         var response = await httpClient.PostAsync(url, content, cancellationToken);
 
