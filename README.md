@@ -1,11 +1,12 @@
-[//]: # (Update this file with actual SystemName and ActionName)
-# Frends.{SystemName}
+# Frends.OracleFusion
 
-Frends tasks for {SystemName} related operations.
+Frends tasks for OracleFusion related operations.
 
 # Tasks
 
-- [Frends.{SystemName}.{ActionName}](Frends.{SystemName}.{ActionName}/README.md)
+- [Frends.OracleFusion.GetEssJobStatus](Frends.OracleFusion.GetEssJobStatus/README.md)
+- [Frends.OracleFusion.ImportBulkData](Frends.OracleFusion.ImportBulkData/README.md)
+- [Frends.OracleFusion.SubmitEssJob](Frends.OracleFusion.SubmitEssJob/README.md)
 
 # Contributing
 
