@@ -11,6 +11,7 @@ using RichardSzalay.MockHttp;
 namespace Frends.OracleFusion.ImportBulkData.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class FunctionalTests
 {
     private const string BaseUrl = "https://oracle-test.example.com";
