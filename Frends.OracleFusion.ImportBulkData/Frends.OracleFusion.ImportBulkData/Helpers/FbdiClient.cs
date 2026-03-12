@@ -15,6 +15,11 @@ namespace Frends.OracleFusion.ImportBulkData.Helpers;
 /// </summary>
 internal class FbdiClient : IDisposable
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = null, // Keep original casing (PascalCase)
+    };
+
     private readonly HttpClient httpClient;
     private readonly string baseUrl;
     private readonly string apiVersion;
@@ -77,13 +82,7 @@ internal class FbdiClient : IDisposable
 
         var url = $"{baseUrl}/fscmRestApi/resources/{apiVersion}/erpintegrations";
 
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = null, // Keep original casing (PascalCase)
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
-
-        var json = JsonSerializer.Serialize(requestBody, options);
+        var json = JsonSerializer.Serialize(requestBody, SerializerOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
         httpClient.DefaultRequestHeaders.Accept.Clear();
