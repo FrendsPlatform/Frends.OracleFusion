@@ -16,7 +16,7 @@ public class Result
     /// <summary>
     /// ESS job request ID.
     /// </summary>
-    /// <example>12345</example>
+    /// <example>1234</example>
     public string RequestId { get; set; }
 
     /// <summary>
