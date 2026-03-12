@@ -58,7 +58,7 @@ internal class EssJobClient : IDisposable
     public async Task<JobStatusResponse> GetJobStatusAsync(string requestId, CancellationToken cancellationToken)
     {
         var url = $"{baseUrl}/fscmRestApi/resources/{apiVersion}/erpintegrations?finder=ESSJobStatusRF;requestId={requestId}";
-        var response = await httpClient.GetAsync(url, cancellationToken);
+        using var response = await httpClient.GetAsync(url, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -94,7 +94,7 @@ internal class EssJobClient : IDisposable
 
         var url = $"{baseUrl}/fscmRestApi/resources/{apiVersion}/erpintegrations?finder=ESSJobExecutionDetailsRF;requestId={requestId},fileType={fileType}";
 
-        var response = await httpClient.GetAsync(url, cancellationToken);
+        using var response = await httpClient.GetAsync(url, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {

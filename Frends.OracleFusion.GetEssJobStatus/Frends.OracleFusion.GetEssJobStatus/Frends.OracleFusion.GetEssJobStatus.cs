@@ -74,6 +74,11 @@ public static class OracleFusion
 
         if (options.WaitForCompletion)
         {
+            if (options.TimeoutMinutes <= 0)
+                throw new ArgumentException("TimeoutMinutes must be greater than 0 when WaitForCompletion is enabled.", nameof(options));
+            if (options.PollingIntervalSeconds < 0)
+                throw new ArgumentException("PollingIntervalSeconds cannot be negative.", nameof(options));
+
             var timeoutTime = DateTime.UtcNow.AddMinutes(options.TimeoutMinutes);
 
             while (!isTerminalState && DateTime.UtcNow < timeoutTime)
@@ -154,8 +159,8 @@ public static class OracleFusion
 
         if (isTerminalState && !success && options.ThrowErrorOnFailure)
         {
-        throw new Exception(
-            $"ESS job failed. Status: {statusResponse.Status}, Request ID: {statusResponse.ReqstId}");
+            throw new Exception(
+                $"ESS job failed. Status: {statusResponse.Status}, Request ID: {statusResponse.ReqstId}");
         }
 
         return new Result
@@ -164,8 +169,7 @@ public static class OracleFusion
             IsCompleted = isTerminalState,
             RequestId = input.RequestId,
             JobStatus = statusResponse.RequestStatus ?? "UNKNOWN",
-            JobStatusDescription = $"Job status: {statusResponse.RequestStatus}",
-            CompletedTime = isTerminalState ? DateTime.UtcNow : null,
+            StatusCheckedAt = isTerminalState ? DateTime.UtcNow : null,
             LogFileContent = logFileContent,
             OutputFileContent = outputFileContent,
             Output = decodedOutput ?? $"Job {statusResponse.RequestStatus}. Request ID: {statusResponse.ReqstId}",

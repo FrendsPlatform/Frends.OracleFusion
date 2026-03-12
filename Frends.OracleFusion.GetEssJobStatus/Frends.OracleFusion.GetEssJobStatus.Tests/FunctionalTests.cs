@@ -13,6 +13,7 @@ using RichardSzalay.MockHttp;
 namespace Frends.OracleFusion.GetEssJobStatus.Tests;
 
 [TestFixture]
+[NonParallelizable]
 public class FunctionalTests
 {
     private const string BaseUrl = "https://oracle-test.example.com";
@@ -154,7 +155,6 @@ public class FunctionalTests
         mockHttp
             .When(HttpMethod.Get, StatusUrl)
             .Respond(HttpStatusCode.OK, "application/json", StatusJson("SUCCEEDED"));
-
         OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
 
         var result = OracleFusion.GetEssJobStatus(

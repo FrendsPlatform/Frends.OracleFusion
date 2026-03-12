@@ -33,16 +33,10 @@ public class Result
     public string JobStatus { get; set; }
 
     /// <summary>
-    /// Detailed status description.
-    /// </summary>
-    /// <example>Request execution was successful</example>
-    public string JobStatusDescription { get; set; }
-
-    /// <summary>
-    /// Job completion timestamp.
+    /// The UTC timestamp of when this status check was performed.
     /// </summary>
     /// <example>2024-06-30T10:24:07.723Z</example>
-    public DateTime? CompletedTime { get; set; }
+    public DateTime? StatusCheckedAt { get; set; }
 
     /// <summary>
     /// Base64 encoded log file content (if requested and available).
