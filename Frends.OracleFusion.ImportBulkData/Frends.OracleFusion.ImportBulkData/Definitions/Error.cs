@@ -16,5 +16,6 @@ public class Error
     /// <summary>
     /// Additional information about the error.
     /// </summary>
+    /// <example>System.IO.IOException: The file is in use by another process.</example>
     public Exception AdditionalInfo { get; set; }
 }
