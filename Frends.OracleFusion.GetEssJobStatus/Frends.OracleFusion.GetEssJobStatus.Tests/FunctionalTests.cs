@@ -229,6 +229,80 @@ public class FunctionalTests
         Assert.That(ex.Message, Does.Contain(statusCode.ToString()));
     }
 
+    [Test]
+    public void GetEssJobStatus_MissingRequestId_ThrowsArgumentException()
+    {
+        var input = BuildValidInput();
+        input.RequestId = null;
+
+        var ex = Assert.Throws<Exception>(() =>
+            OracleFusion.GetEssJobStatus(
+                input,
+                BuildValidConnection(),
+                BuildOptions(),
+                CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("RequestId"));
+    }
+
+    [Test]
+    public void GetEssJobStatus_SingleCheck_JobFailed_ThrowErrorOnFailureFalse_ReturnsFailedResult()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("FAILED"));
+
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            BuildOptions(waitForCompletion: false, throwErrorOnFailure: false),
+            CancellationToken.None);
+
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.IsCompleted, Is.True);
+        Assert.That(result.JobStatus, Is.EqualTo("FAILED"));
+        Assert.That(result.Error, Is.Not.Null);
+        Assert.That(result.Error.Message, Does.Contain("FAILED"));
+    }
+
+    [Test]
+    public void GetEssJobStatus_SingleCheck_JobCancelled_ReturnsCompletedNotSuccess()
+    {
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
+            .When(HttpMethod.Get, StatusUrl)
+            .Respond(HttpStatusCode.OK, "application/json", StatusJson("CANCELLED"));
+
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
+
+        var result = OracleFusion.GetEssJobStatus(
+            BuildValidInput(),
+            BuildValidConnection(),
+            BuildOptions(waitForCompletion: false, throwErrorOnFailure: false),
+            CancellationToken.None);
+
+        Assert.That(result.IsCompleted, Is.True);
+        Assert.That(result.Success, Is.False);
+        Assert.That(result.JobStatus, Is.EqualTo("CANCELLED"));
+        Assert.That(result.Error, Is.Not.Null);
+    }
+
+    [Test]
+    public void GetEssJobStatus_WaitForCompletion_InvalidTimeoutMinutes_ThrowsArgumentException()
+    {
+        var ex = Assert.Throws<Exception>(() =>
+            OracleFusion.GetEssJobStatus(
+                BuildValidInput(),
+                BuildValidConnection(),
+                BuildOptions(waitForCompletion: true, timeoutMinutes: 0, pollingIntervalSeconds: 0),
+                CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("TimeoutMinutes"));
+    }
+
     [TearDown]
     public void TearDown()
     {
@@ -250,15 +324,16 @@ public class FunctionalTests
     };
 
     private static Options BuildOptions(
-        bool waitForCompletion = false,
-        int timeoutMinutes = 1,
-        int pollingIntervalSeconds = 0) => new Options
-        {
-            WaitForCompletion = waitForCompletion,
-            TimeoutMinutes = timeoutMinutes,
-            PollingIntervalSeconds = pollingIntervalSeconds,
-            ThrowErrorOnFailure = true,
-        };
+    bool waitForCompletion = false,
+    int timeoutMinutes = 1,
+    int pollingIntervalSeconds = 0,
+    bool throwErrorOnFailure = true) => new Options
+    {
+        WaitForCompletion = waitForCompletion,
+        TimeoutMinutes = timeoutMinutes,
+        PollingIntervalSeconds = pollingIntervalSeconds,
+        ThrowErrorOnFailure = throwErrorOnFailure,
+    };
 
     private static EssJobClient BuildClient(MockHttpMessageHandler mockHttp) =>
         new EssJobClient(BaseUrl, Username, Password, ApiVersion, mockHttp.ToHttpClient());
