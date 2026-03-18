@@ -85,7 +85,7 @@ public static class OracleFusion
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 statusResponse = await client.GetJobStatusAsync(input.RequestId, cancellationToken);
-                isTerminalState = IsTerminalState(statusResponse.Status);
+                isTerminalState = IsTerminalState(statusResponse.RequestStatus ?? "UNKNOWN");
 
                 if (!isTerminalState)
                     await Task.Delay(TimeSpan.FromSeconds(options.PollingIntervalSeconds), cancellationToken);
@@ -95,13 +95,13 @@ public static class OracleFusion
             {
                 throw new TimeoutException(
                     $"Job did not complete within {options.TimeoutMinutes} minutes. " +
-                    $"Last known status: {statusResponse?.Status}");
+                    $"Last known status: {statusResponse.RequestStatus ?? "UNKNOWN"}");
             }
         }
         else
         {
             statusResponse = await client.GetJobStatusAsync(input.RequestId, cancellationToken);
-            isTerminalState = IsTerminalState(statusResponse.Status);
+            isTerminalState = IsTerminalState(statusResponse.RequestStatus ?? "UNKNOWN");
         }
 
         string logFileContent = null;
@@ -109,10 +109,10 @@ public static class OracleFusion
         string decodedOutput = null;
 
         if ((options.IncludeLogFile || options.IncludeOutputFile) &&
-            (statusResponse.Status == "SUCCEEDED"
-             || statusResponse.Status == "WARNING"
-             || statusResponse.Status == "FAILED"
-             || statusResponse.Status == "ERROR"))
+            (statusResponse.RequestStatus == "SUCCEEDED"
+             || statusResponse.RequestStatus == "WARNING"
+             || statusResponse.RequestStatus == "FAILED"
+             || statusResponse.RequestStatus == "ERROR"))
         {
             try
             {
@@ -122,16 +122,12 @@ public static class OracleFusion
                     options.IncludeOutputFile,
                     cancellationToken);
 
-                if (options.IncludeLogFile && options.IncludeOutputFile)
-                {
-                    logFileContent = outputResponse.DocumentContent;
-                    outputFileContent = outputResponse.DocumentContent;
-                }
-                else if (options.IncludeLogFile)
+                if (options.IncludeLogFile)
                 {
                     logFileContent = outputResponse.DocumentContent;
                 }
-                else if (options.IncludeOutputFile)
+
+                if (options.IncludeOutputFile)
                 {
                     outputFileContent = outputResponse.DocumentContent;
                 }
@@ -155,12 +151,12 @@ public static class OracleFusion
             }
         }
 
-        var success = statusResponse.Status == "SUCCEEDED" || statusResponse.Status == "WARNING";
+        var success = statusResponse.RequestStatus == "SUCCEEDED" || statusResponse.RequestStatus == "WARNING";
 
         if (isTerminalState && !success && options.ThrowErrorOnFailure)
         {
             throw new Exception(
-                $"ESS job failed. Status: {statusResponse.Status}, Request ID: {statusResponse.ReqstId}");
+                $"ESS job failed. Status: {statusResponse.RequestStatus ?? "UNKNOWN"}, Request ID: {statusResponse.ReqstId}");
         }
 
         return new Result

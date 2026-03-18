@@ -12,6 +12,7 @@ public class Options
     /// Timeout in seconds for HTTP requests.
     /// </summary>
     /// <example>30</example>
+    [Range(1, int.MaxValue, ErrorMessage = "TimeoutSeconds must be greater than 0.")]
     [DefaultValue(30)]
     public int TimeoutSeconds { get; set; } = 30;
 

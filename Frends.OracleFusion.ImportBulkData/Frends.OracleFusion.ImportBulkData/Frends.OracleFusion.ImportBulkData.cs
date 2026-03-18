@@ -28,7 +28,7 @@ public static class OracleFusion
     /// </summary>
     /// <param name="input">Essential parameters including files and UCM account.</param>
     /// <param name="connection">Connection parameters for Oracle Fusion authentication.</param>
-    /// <param name="options">Additional parameters for error handling  and request timeout.</param>
+    /// <param name="options">Additional parameters for error handling and request timeout.</param>
     /// <param name="cancellationToken">A cancellation token provided by Frends Platform.</param>
     /// <returns>object { bool Success, string DocumentId, string Output, object Error { string Message, Exception AdditionalInfo } }</returns>
     public static Result ImportBulkData(

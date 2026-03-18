@@ -20,10 +20,4 @@ internal class JobStatusResponse
     /// <example>SUCCEEDED</example>
     [JsonPropertyName("RequestStatus")]
     public string RequestStatus { get; set; }
-
-    /// <summary>
-    /// Gets the status (same as RequestStatus for compatibility).
-    /// </summary>
-    /// <example>SUCCEEDED</example>
-    public string Status => RequestStatus ?? "UNKNOWN";
 }

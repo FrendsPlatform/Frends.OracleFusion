@@ -115,19 +115,9 @@ public class FunctionalTests
     [Test]
     public void GetEssJobStatus_WaitForCompletion_JobSucceedsAfterPolling_ReturnsSuccess()
     {
-        var mockHttp = new MockHttpMessageHandler();
-        mockHttp.When(HttpMethod.Get, StatusUrl)
-            .Respond(() =>
-            {
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent(StatusJson("RUNNING"), System.Text.Encoding.UTF8, "application/json"),
-                });
-            });
-
         var responses = new Queue<string>(["RUNNING", "RUNNING", "SUCCEEDED"]);
-        var mockHttp2 = new MockHttpMessageHandler();
-        mockHttp2
+        var mockHttp = new MockHttpMessageHandler();
+        mockHttp
             .When(HttpMethod.Get, StatusUrl)
             .Respond(() =>
             {
@@ -138,7 +128,7 @@ public class FunctionalTests
                 });
             });
 
-        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp2);
+        OracleFusion.EssJobClientConstructor = (_, _, _, _) => BuildClient(mockHttp);
 
         var result = OracleFusion.GetEssJobStatus(
             BuildValidInput(),
