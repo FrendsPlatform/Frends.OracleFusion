@@ -19,7 +19,7 @@ internal class JobOutputResponse
     /// </summary>
     /// <example>12345</example>
     [JsonPropertyName("ReqstId")]
-    public string ReqstId { get; set; }
+    public string RequestId { get; set; }
 
     /// <summary>
     /// Gets or sets the file type.

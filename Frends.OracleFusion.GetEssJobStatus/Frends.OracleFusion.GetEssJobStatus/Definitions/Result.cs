@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Frends.OracleFusion.GetEssJobStatus.Helpers;
 
 namespace Frends.OracleFusion.GetEssJobStatus.Definitions;
 
@@ -51,10 +53,10 @@ public class Result
     public string OutputFileContent { get; set; }
 
     /// <summary>
-    /// Decoded text output for convenience.
+    /// List of files extracted from the ESS job output ZIP archive. Populated when IncludeLogFile or IncludeOutputFile is enabled and the job has completed.
     /// </summary>
-    /// <example>Job completed successfully with 100 records processed.</example>
-    public string Output { get; set; }
+    /// <example>[{ "FileName": "report.csv", "Content": "col1,col2\nval1,val2" }]</example>
+    public List<ExtractedFile> OutputFiles { get; set; }
 
     /// <summary>
     /// Error that occurred during task execution.

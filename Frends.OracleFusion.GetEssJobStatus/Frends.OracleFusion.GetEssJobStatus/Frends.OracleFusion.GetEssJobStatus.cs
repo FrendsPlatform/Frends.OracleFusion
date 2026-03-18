@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.IO.Compression;
@@ -106,7 +107,7 @@ public static class OracleFusion
 
         string logFileContent = null;
         string outputFileContent = null;
-        string decodedOutput = null;
+        List<ExtractedFile> outputFiles = null;
 
         if ((options.IncludeLogFile || options.IncludeOutputFile) &&
             (statusResponse.RequestStatus == "SUCCEEDED"
@@ -137,17 +138,31 @@ public static class OracleFusion
                     try
                     {
                         var zipBytes = Convert.FromBase64String(outputResponse.DocumentContent);
-                        decodedOutput = ExtractZipContent(zipBytes);
+                        outputFiles = ExtractZipContent(zipBytes);
                     }
                     catch (Exception ex)
                     {
-                        decodedOutput = $"Failed to extract ZIP content: {ex.Message}. ZIP file size: {outputResponse.DocumentContent.Length} chars (base64).";
+                        outputFiles = new List<ExtractedFile>
+                {
+                    new ExtractedFile
+                    {
+                        FileName = null,
+                        Content = $"Failed to extract ZIP content: {ex.Message}",
+                    },
+                };
                     }
                 }
             }
             catch (Exception ex)
             {
-                decodedOutput = $"Failed to retrieve job output: {ex.Message}";
+                outputFiles = new List<ExtractedFile>
+                {
+                    new ExtractedFile
+                    {
+                        FileName = null,
+                        Content = $"Failed to retrieve job output: {ex.Message}",
+                    },
+                };
             }
         }
 
@@ -156,7 +171,7 @@ public static class OracleFusion
         if (isTerminalState && !success && options.ThrowErrorOnFailure)
         {
             throw new Exception(
-                $"ESS job failed. Status: {statusResponse.RequestStatus ?? "UNKNOWN"}, Request ID: {statusResponse.ReqstId}");
+                $"ESS job failed. Status: {statusResponse.RequestStatus ?? "UNKNOWN"}, Request ID: {statusResponse.RequestId}");
         }
 
         return new Result
@@ -168,10 +183,10 @@ public static class OracleFusion
             StatusCheckedAt = isTerminalState ? DateTime.UtcNow : null,
             LogFileContent = logFileContent,
             OutputFileContent = outputFileContent,
-            Output = decodedOutput ?? $"Job {statusResponse.RequestStatus}. Request ID: {statusResponse.ReqstId}",
+            OutputFiles = outputFiles,
             Error = isTerminalState && !success ? new Error
             {
-                Message = $"Job status: {statusResponse.RequestStatus}. Request ID: {statusResponse.ReqstId}",
+                Message = $"Job status: {statusResponse.RequestStatus}. Request ID: {statusResponse.RequestId}",
                 AdditionalInfo = null,
             }
             : null,
@@ -192,34 +207,30 @@ public static class OracleFusion
         };
     }
 
-    private static string ExtractZipContent(byte[] zipBytes)
+    private static List<ExtractedFile> ExtractZipContent(byte[] zipBytes)
     {
-        var extractedFiles = new StringBuilder();
+        var extractedFiles = new List<ExtractedFile>();
 
         using (var zipStream = new MemoryStream(zipBytes))
         using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Read))
         {
-            extractedFiles.AppendLine($"ZIP archive contains {archive.Entries.Count} file(s):");
-            extractedFiles.AppendLine();
-
             foreach (var entry in archive.Entries)
             {
                 if (entry.Length == 0)
                     continue;
 
-                extractedFiles.AppendLine($"=== {entry.FullName} ({entry.Length} bytes) ===");
-
                 using (var entryStream = entry.Open())
                 using (var reader = new StreamReader(entryStream, Encoding.UTF8))
                 {
-                    var content = reader.ReadToEnd();
-                    extractedFiles.AppendLine(content);
+                    extractedFiles.Add(new ExtractedFile
+                    {
+                        FileName = entry.FullName,
+                        Content = reader.ReadToEnd(),
+                    });
                 }
-
-                extractedFiles.AppendLine();
             }
         }
 
-        return extractedFiles.ToString();
+        return extractedFiles;
     }
 }

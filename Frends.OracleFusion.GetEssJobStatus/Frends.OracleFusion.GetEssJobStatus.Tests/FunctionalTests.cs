@@ -390,7 +390,7 @@ public class FunctionalTests
 
         Assert.That(result.Success, Is.True);
         Assert.That(result.LogFileContent, Is.Null);
-        Assert.That(result.Output, Does.Contain("Failed to retrieve job output"));
+        Assert.That(result.OutputFiles[0].Content, Does.Contain("Failed to retrieve job output"));
     }
 
     [TearDown]
