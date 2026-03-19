@@ -13,7 +13,6 @@ using RichardSzalay.MockHttp;
 namespace Frends.OracleFusion.GetEssJobStatus.Tests;
 
 [TestFixture]
-[NonParallelizable]
 public class FunctionalTests
 {
     private const string BaseUrl = "https://oracle-test.example.com";
