@@ -1,0 +1,12 @@
+﻿[
+  {
+    "Task": "Frends.OracleFusion.SubmitEssJob",
+    "Migrations": [
+      {
+        "Version": "1.0.0",
+        "Description": "",
+        "Migration": []
+      }
+    ]
+  }
+]

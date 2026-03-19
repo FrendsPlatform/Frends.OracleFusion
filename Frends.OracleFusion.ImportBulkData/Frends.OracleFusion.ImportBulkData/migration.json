@@ -1,0 +1,12 @@
+﻿[
+  {
+    "Task": "Frends.OracleFusion.ImportBulkData",
+    "Migrations": [
+      {
+        "Version": "1.0.0",
+        "Description": "",
+        "Migration": []
+      }
+    ]
+  }
+]
